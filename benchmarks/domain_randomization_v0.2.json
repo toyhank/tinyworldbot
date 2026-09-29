@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "controller": "fixed self-discovered champion grasp",
+  "moderate": {
+    "command": "domain_randomization_pickplace.py --domain moderate --trials 24 --seed 4242",
+    "trials": 24,
+    "place_successes": 6,
+    "place_rate": 0.25,
+    "vision_mean_error_cm": 0.73,
+    "vision_p95_error_cm": 1.3
+  },
+  "harsh": {
+    "command": "domain_randomization_pickplace.py --domain harsh --trials 16 --seed 9090",
+    "trials": 16,
+    "place_successes": 4,
+    "place_rate": 0.25
+  },
+  "randomized": [
+    "object_size",
+    "object_mass",
+    "object_friction",
+    "jaw_friction",
+    "floor_friction",
+    "actuator_gain",
+    "actuator_force",
+    "camera_pose",
+    "lighting"
+  ],
+  "note": "Stress test used during development; demonstrates simulator-domain sensitivity rather than a sim-to-real success claim."
+}

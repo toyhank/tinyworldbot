@@ -1,0 +1,142 @@
+{
+  "version": "0.2.0",
+  "command": "python -m tinyworldbot.pickplace --trials 16 --seed 13579",
+  "seed": 13579,
+  "seed_stride": 7919,
+  "trials": 16,
+  "max_attempts": 6,
+  "held_out_object_appearance": true,
+  "randomized": [
+    "object_xy",
+    "goal_xy"
+  ],
+  "fixed": [
+    "physics",
+    "camera_calibration_model",
+    "table",
+    "object_shape"
+  ],
+  "success_threshold": {
+    "object_z_lt_m": 0.045,
+    "xy_error_lt_m": 0.05
+  },
+  "successes": 9,
+  "success_rate": 0.5625,
+  "median_error_cm": 3.93,
+  "mean_attempts": 3.38,
+  "episodes": [
+    {
+      "episode": 1,
+      "success": true,
+      "error_cm": 1.14,
+      "attempts": 6,
+      "candidate": 6
+    },
+    {
+      "episode": 2,
+      "success": true,
+      "error_cm": 4.15,
+      "attempts": 1,
+      "candidate": 1
+    },
+    {
+      "episode": 3,
+      "success": false,
+      "error_cm": 6.47,
+      "attempts": 1,
+      "candidate": 1
+    },
+    {
+      "episode": 4,
+      "success": true,
+      "error_cm": 4.43,
+      "attempts": 6,
+      "candidate": 6
+    },
+    {
+      "episode": 5,
+      "success": true,
+      "error_cm": 1.57,
+      "attempts": 6,
+      "candidate": 6
+    },
+    {
+      "episode": 6,
+      "success": true,
+      "error_cm": 3.7,
+      "attempts": 3,
+      "candidate": 3
+    },
+    {
+      "episode": 7,
+      "success": false,
+      "error_cm": 7.59,
+      "attempts": 6,
+      "candidate": null
+    },
+    {
+      "episode": 8,
+      "success": true,
+      "error_cm": 3.6,
+      "attempts": 2,
+      "candidate": 2
+    },
+    {
+      "episode": 9,
+      "success": false,
+      "error_cm": 5.74,
+      "attempts": 1,
+      "candidate": 1
+    },
+    {
+      "episode": 10,
+      "success": true,
+      "error_cm": 3.48,
+      "attempts": 1,
+      "candidate": 1
+    },
+    {
+      "episode": 11,
+      "success": false,
+      "error_cm": 5.49,
+      "attempts": 1,
+      "candidate": 1
+    },
+    {
+      "episode": 12,
+      "success": false,
+      "error_cm": 3.13,
+      "attempts": 6,
+      "candidate": null
+    },
+    {
+      "episode": 13,
+      "success": true,
+      "error_cm": 2.55,
+      "attempts": 1,
+      "candidate": 1
+    },
+    {
+      "episode": 14,
+      "success": false,
+      "error_cm": 6.35,
+      "attempts": 6,
+      "candidate": 6
+    },
+    {
+      "episode": 15,
+      "success": false,
+      "error_cm": 3.15,
+      "attempts": 6,
+      "candidate": null
+    },
+    {
+      "episode": 16,
+      "success": true,
+      "error_cm": 4.49,
+      "attempts": 1,
+      "candidate": 1
+    }
+  ],
+  "note": "Simulator object truth is used only for final scoring, not runtime action selection."
+}

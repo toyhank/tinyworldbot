@@ -161,6 +161,83 @@ class GlobalBootstrapDetector:
         self.renderer.close()
 
 
+
+class HighPrecisionGlobalDetector(GlobalBootstrapDetector):
+    """Tighter overhead detector for pick-and-place workspaces.
+
+    It uses the same color-agnostic current-vs-empty idea as
+    GlobalBootstrapDetector but fits a denser calibration over the smaller
+    pick-and-place workspace and scores components by total RGB residual.
+    """
+
+    @staticmethod
+    def discover_centroid(
+        current: np.ndarray,
+        empty: np.ndarray,
+    ) -> np.ndarray | None:
+        diff = np.linalg.norm(
+            current.astype(np.float32) - empty.astype(np.float32),
+            axis=2,
+        )
+        diff = cv2.GaussianBlur(diff, (3, 3), 0)
+        nz = diff[diff > 2.0]
+        if len(nz) < 8:
+            return None
+
+        threshold = max(10.0, float(np.percentile(nz, 65)))
+        mask = (diff >= threshold).astype(np.uint8) * 255
+        mask = cv2.morphologyEx(
+            mask, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8)
+        )
+        n, labels, stats, _ = cv2.connectedComponentsWithStats(mask, 8)
+
+        candidates: list[tuple[float, int]] = []
+        for i in range(1, n):
+            x, y, w, h, area = stats[i]
+            if 8 <= area <= 2200 and w <= 70 and h <= 70:
+                candidates.append((float(diff[labels == i].sum()), i))
+        if not candidates:
+            return None
+
+        _, idx = max(candidates)
+        x, y, w, h, _ = stats[idx]
+        return np.asarray([x + w / 2, y + h / 2], dtype=np.float32)
+
+    def _calibrate(self) -> None:
+        address = self.env._cube_joint_addresses["red_cube"]
+        saved_qpos = self.env.data.qpos[address : address + 7].copy()
+        saved_qvel = self.env.data.qvel.copy()
+        geom_id = self.env._cube_geom_ids["red_cube"]
+        saved_rgba = self.env.model.geom_rgba[geom_id].copy()
+
+        # Calibration target appearance is irrelevant at runtime; using a
+        # high-contrast target makes the geometric fit less noisy.
+        self.env.model.geom_rgba[geom_id] = (0.85, 0.12, 0.10, 1.0)
+
+        pixels: list[np.ndarray] = []
+        world: list[list[float]] = []
+        for y in np.linspace(-0.10, 0.08, 7):
+            for x in np.linspace(0.19, 0.29, 7):
+                self.env.write_cube_pose(
+                    "red_cube",
+                    np.asarray([x, y, self.env.cube_half_size]),
+                )
+                mujoco.mj_forward(self.env.model, self.env.data)
+                uv = self._pixel()
+                if uv is not None:
+                    pixels.append(uv)
+                    world.append([x, y])
+
+        self.env.data.qpos[address : address + 7] = saved_qpos
+        self.env.data.qvel[:] = saved_qvel
+        self.env.model.geom_rgba[geom_id] = saved_rgba
+        mujoco.mj_forward(self.env.model, self.env.data)
+
+        X = poly_features(np.asarray(pixels, np.float32))
+        Y = np.asarray(world, np.float32)
+        self.world_w = np.linalg.lstsq(X, Y, rcond=None)[0]
+
+
 class WristAppearanceTracker:
     """Moving-camera tracker for the contact phase.
 

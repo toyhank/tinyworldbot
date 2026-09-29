@@ -9,7 +9,7 @@ a learned world model, and MPC on an SO-101 arm.
 
 ![TinyWorldBot demo](media/demo.gif)
 
-Reference run:
+Reference pushing run:
 
 ```text
 1,600 autonomous interactions
@@ -20,6 +20,41 @@ held-out object appearance
 27 control steps
 success threshold: < 4 cm
 ```
+
+## v0.2: self-recovering pick-and-place
+
+TinyWorldBot now also includes a physics pick-and-place extension built from
+autonomously discovered grasp primitives.
+
+![Pick-and-place demo](media/pickplace.gif)
+
+The runtime loop is intentionally simple:
+
+```text
+cached global RGB
+-> locate object
+-> try a discovered grasp
+-> lift
+-> verify with same-pose wrist RGB
+-> retry if verification fails
+-> transport
+-> align object center to goal
+-> settle on table
+-> slow release
+```
+
+The pick-and-place controller does not use MuJoCo object coordinates to choose
+actions. Simulator truth is used only for final benchmark scoring.
+
+A held-out validation batch with random object XY, random goal XY, and a
+held-out object appearance produced **9 / 16 complete successes (56.2%)**.
+That is an engineering regression number, not a statistically established
+robotics result. Under physics randomization the fixed grasp baseline drops
+sharply, which is documented rather than hidden.
+
+See [docs/pickplace.md](docs/pickplace.md) for the method, failure modes,
+sim-to-real caveats, and reproduction commands. The exact v0.2 regression
+record is checked in at [benchmarks/pickplace_v0.2.json](benchmarks/pickplace_v0.2.json).
 
 ## Why this exists
 
@@ -111,9 +146,12 @@ python -m venv .venv
 
 pip install -e .
 python -m tinyworldbot.demo --samples 1600 --epochs 35
+
+# v0.2 pick-and-place
+python -m tinyworldbot.pickplace --trials 8 --seed 13579
 ```
 
-A shorter smoke run:
+A shorter pushing smoke run:
 
 ```bash
 python -m tinyworldbot.demo --samples 300 --epochs 3 --device cpu
@@ -158,10 +196,12 @@ tinyworldbot/
   vision.py       # global bootstrap + wrist tracking
   world_model.py  # history-aware dynamics model
   planner.py      # setup controller + residual CEM/MPC
-  demo.py         # autonomous data collection, training, evaluation
+  demo.py         # autonomous pushing data collection/training/evaluation
+  pickplace.py    # self-recovering pick-and-place baseline
   assets/so101/   # MuJoCo model and meshes
 tests/
 docs/
+benchmarks/      # exact small-batch regression records
 media/
 ```
 
@@ -180,9 +220,19 @@ simulation number:
 
 ## Reproducibility note
 
-The headline number above is one deterministic reference run from the current
-standalone repository (seed 113, 1,600 interactions, 35 epochs). It is **not** presented as a statistically established
-success rate. Multi-seed evaluation is the next benchmark to add.
+The pushing headline is one deterministic reference run from the standalone
+repository (seed 113, 1,600 interactions, 35 epochs). The pick-and-place number
+uses a separate held-out seed batch. Neither should be read as a statistically
+established success rate.
+
+For pick-and-place:
+
+```bash
+python -m tinyworldbot.pickplace --trials 8 --seed 13579
+```
+
+The shorter 8-episode subset can vary substantially from the 16-episode
+validation result, which is exactly why the repo keeps the sample size visible.
 
 ## Third-party assets
 

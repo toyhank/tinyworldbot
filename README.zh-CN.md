@@ -10,7 +10,7 @@ TinyWorldBot 是一个基于 MuJoCo 的小型机器人研究项目，用 SO-101 
 
 ![TinyWorldBot demo](media/demo.gif)
 
-当前参考结果：
+当前 pushing 参考结果：
 
 ```text
 1,600 次自主交互
@@ -21,6 +21,35 @@ TinyWorldBot 是一个基于 MuJoCo 的小型机器人研究项目，用 SO-101 
 27 个控制步
 成功阈值：< 4 cm
 ```
+
+## v0.2：自恢复 Pick-and-Place
+
+TinyWorldBot 现在增加了一条完整的物理抓取/搬运/放置链路，抓取 primitive 来自自主探索，而不是人工遥操作示范。
+
+![Pick-and-place demo](media/pickplace.gif)
+
+运行时流程：
+
+```text
+缓存的空桌面 RGB
+-> 定位物体
+-> 尝试一个自主发现的 grasp
+-> 抬升
+-> 回到固定姿态，用 wrist RGB 判断有没有抓住
+-> 判断失败就松开、回 home、重新找物体、换下一个 grasp
+-> 搬运
+-> 用 object-in-gripper offset 修正放置点
+-> 先让桌面承重
+-> 慢速松爪
+```
+
+运行时选动作不读取 MuJoCo 的物体真实坐标或高度；simulator truth 只用于最后统计结果。
+
+固定 physics、随机物体 XY、随机目标 XY、held-out 物体颜色的一组验证中，**16 次完整 pick-and-place 成功 9 次（56.2%）**。这个数字只是工程回归测试，不是统计意义上的机器人 benchmark。
+
+更重要的是，换成随机质量、摩擦、尺寸、相机姿态和 actuator dynamics 后，固定冠军 grasp 会明显掉到约 25% place success。这个负结果被保留在文档里，因为它直接说明 sim-to-real gap 还很大。
+
+完整方法、失败案例和复现实验见：[docs/pickplace.md](docs/pickplace.md)
 
 ## 为什么做这个项目
 
@@ -117,9 +146,12 @@ python -m venv .venv
 
 pip install -e .
 python -m tinyworldbot.demo --samples 1600 --epochs 35
+
+# v0.2 pick-and-place
+python -m tinyworldbot.pickplace --trials 8 --seed 13579
 ```
 
-如果只想快速确认项目可以运行：
+如果只想快速确认 pushing 可以运行：
 
 ```bash
 python -m tinyworldbot.demo --samples 300 --epochs 3 --device cpu
@@ -219,7 +251,8 @@ tinyworldbot/
   vision.py       # 全局初始化视觉 + 腕部视觉跟踪
   world_model.py  # 带短历史的动力学模型
   planner.py      # setup controller + residual CEM/MPC
-  demo.py         # 自主采集、训练、评估
+  demo.py         # pushing 的自主采集、训练、评估
+  pickplace.py    # 自恢复 pick-and-place baseline
   assets/so101/   # MuJoCo 模型和 mesh
 
 tests/
@@ -229,7 +262,7 @@ media/
 
 ## 当前结果应该怎么理解
 
-目前的 headline result 是当前独立仓库的一次确定性参考运行：
+pushing 的 headline result 是当前独立仓库的一次确定性参考运行：
 
 ```text
 seed = 113
@@ -241,6 +274,14 @@ epochs = 35
 ```
 
 这**不是**经过大量随机种子验证后的统计成功率。
+
+pick-and-place 使用另外一批 held-out seed 做了小规模验证：
+
+```bash
+python -m tinyworldbot.pickplace --trials 8 --seed 13579
+```
+
+8 次这种小样本可能和 16 次验证的 56.2% 有明显波动，所以 README 不把某个短 batch 的最好数字当成“成功率”。
 
 所以现在可以说：
 
