@@ -1,0 +1,53 @@
+<mujoco model="physical_ai_so101_playground">
+  <include file="robot.xml"/>
+
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast"/>
+  <visual>
+    <headlight diffuse="0.65 0.65 0.65" ambient="0.28 0.28 0.28" specular="0.1 0.1 0.1"/>
+    <global offwidth="640" offheight="480"/>
+    <quality shadowsize="2048"/>
+  </visual>
+
+  <asset>
+    <material name="table_material" rgba="0.72 0.62 0.48 1"/>
+    <material name="red_material" rgba="0.88 0.10 0.08 1"/>
+    <material name="green_material" rgba="0.08 0.68 0.24 1"/>
+    <material name="yellow_material" rgba="0.95 0.68 0.04 1"/>
+    <material name="purple_material" rgba="0.58 0.16 0.82 1"/>
+    <material name="blue_material" rgba="0.06 0.26 0.88 1"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.4" diffuse="0.9 0.9 0.9"/>
+    <camera name="scene_camera" pos="0.55 -0.55 0.50" xyaxes="0.858 0.515 0 -0.283 0.472 0.840" fovy="52"/>
+    <geom name="floor" type="plane" pos="0 0 -0.085" size="2 2 0.05" rgba="0.80 0.84 0.80 1"/>
+    <body name="table" pos="0.20 0 -0.04">
+      <geom type="box" size="0.48 0.36 0.04" material="table_material"/>
+    </body>
+
+    <body name="red_cube" pos="0.20 -0.10 0.018">
+      <freejoint name="red_cube_free"/>
+      <geom name="red_cube_geom" type="box" size="0.018 0.018 0.018" material="red_material" mass="0.025" friction="1.4 0.02 0.002" solref="0.004 1"/>
+    </body>
+    <body name="green_cube" pos="0.25 0.02 0.018">
+      <freejoint name="green_cube_free"/>
+      <geom name="green_cube_geom" type="box" size="0.018 0.018 0.018" material="green_material" mass="0.025" friction="1.4 0.02 0.002" solref="0.004 1"/>
+    </body>
+    <body name="yellow_cube" pos="0.16 0.10 0.018">
+      <freejoint name="yellow_cube_free"/>
+      <geom name="yellow_cube_geom" type="box" size="0.018 0.018 0.018" material="yellow_material" mass="0.025" friction="1.4 0.02 0.002" solref="0.004 1"/>
+    </body>
+    <body name="purple_cube" pos="0.30 -0.10 0.018">
+      <freejoint name="purple_cube_free"/>
+      <geom name="purple_cube_geom" type="box" size="0.018 0.018 0.018" material="purple_material" mass="0.025" friction="1.4 0.02 0.002" solref="0.004 1"/>
+    </body>
+
+    <body name="blue_box" mocap="true" pos="0.31 0.15 0.006">
+      <geom type="box" size="0.07 0.06 0.006" material="blue_material"/>
+      <geom type="box" pos="0.064 0 0.035" size="0.006 0.06 0.035" material="blue_material"/>
+      <geom type="box" pos="-0.064 0 0.035" size="0.006 0.06 0.035" material="blue_material"/>
+      <geom type="box" pos="0 0.054 0.035" size="0.058 0.006 0.035" material="blue_material"/>
+      <geom type="box" pos="0 -0.054 0.035" size="0.058 0.006 0.035" material="blue_material"/>
+    </body>
+  </worldbody>
+</mujoco>
