@@ -1,5 +1,7 @@
 # TinyWorldBot
 
+**English** | [中文](README.zh-CN.md)
+
 **Can an SO-101 learn useful contact dynamics without teleoperation demonstrations?**
 
 TinyWorldBot is a small MuJoCo research playground for autonomous interaction,
